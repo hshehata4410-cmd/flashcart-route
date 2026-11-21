@@ -1,17 +1,19 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import SearchIcon from "@/src/svg/SearchIcon";
-import HeartIcon from "@/src/svg/HeartIcon";
-import CartIcon from "@/src/svg/CartIcon";
-import HeadsetIcon from "@/src/svg/HeadsetIcon";
-import XMarkIcon from "@/src/svg/XMarkIcon";
-
-const links = [
-  { label: "Home", href: "/" },
-  { label: "Shop", href: "/products" },
-  { label: "Categories", href: "/categories" },
-  { label: "Brands", href: "/brands" },
-];
+import { usePathname } from "next/navigation";
+import SearchIcon from "@svg/SearchIcon";
+import HeartIcon from "@svg/HeartIcon";
+import CartIcon from "@svg/CartIcon";
+import HeadsetIcon from "@svg/HeadsetIcon";
+import XMarkIcon from "@svg/XMarkIcon";
+import LogoutIcon from "@svg/LogoutIcon";
+import CountBadge from "@components/ui/CountBadge";
+import { useAuth } from "@features/auth/utils/useAuth";
+import { useProductsStore } from "../../store/useProductsStore";
+import { MOBILE_NAV_LINKS } from "./constants";
+import { EMPTY_SEARCH_PARAMS, isHrefActive } from "./utils";
 
 const MobileDrawer = ({
   isOpen,
@@ -20,6 +22,13 @@ const MobileDrawer = ({
   isOpen: boolean;
   onClose: () => void;
 }) => {
+  const pathname = usePathname();
+  const { isAuthenticated, logout } = useAuth();
+  const favoritesCount = useProductsStore((state) => state.favorites.length);
+  const cartCount = useProductsStore((state) =>
+    state.cart.reduce((total, item) => total + item.quantity, 0),
+  );
+
   return (
     <div
       onClick={onClose}
@@ -71,16 +80,30 @@ const MobileDrawer = ({
 
         <nav className="p-4">
           <div className="space-y-1">
-            {links.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={onClose}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {MOBILE_NAV_LINKS.map((link) => {
+              // The drawer has no category submenu, so it matches on path only.
+              const active = isHrefActive(link.href, {
+                pathname,
+                searchParams: EMPTY_SEARCH_PARAMS,
+              });
+
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={onClose}
+                  aria-current={active ? "page" : undefined}
+                  className={[
+                    "flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors",
+                    active
+                      ? "bg-primary-50 text-primary-600"
+                      : "text-gray-700 hover:text-primary-600 hover:bg-primary-50",
+                  ].join(" ")}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
         </nav>
 
@@ -98,6 +121,7 @@ const MobileDrawer = ({
               </div>
               <span className="font-medium text-gray-700">Wishlist</span>
             </div>
+            <CountBadge count={favoritesCount} />
           </Link>
           <Link
             href="/cart"
@@ -110,28 +134,52 @@ const MobileDrawer = ({
               </div>
               <span className="font-medium text-gray-700">Cart</span>
             </div>
+            <CountBadge count={cartCount} />
           </Link>
         </div>
 
         <div className="mx-4 border-t border-gray-100" />
 
         <div className="p-4 space-y-1">
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <Link
-              href="/signin"
-              onClick={onClose}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/signup"
-              onClick={onClose}
-              className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-primary-600 text-primary-600 font-semibold hover:bg-primary-50 transition-colors"
-            >
-              Sign Up
-            </Link>
-          </div>
+          {isAuthenticated ? (
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Link
+                href="/profile"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
+              >
+                Profile
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  logout();
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-primary-600 text-primary-600 font-semibold hover:bg-primary-50 transition-colors"
+              >
+                <LogoutIcon className="size-3.5" />
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Link
+                href="/login"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-primary-600 text-primary-600 font-semibold hover:bg-primary-50 transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
 
         <Link

@@ -1,15 +1,22 @@
+"use client";
+
 import Link from "next/link";
-import TruckIcon from "@/src/svg/TruckIcon";
-import GiftIcon from "@/src/svg/GiftIcon";
-import TelephoneIcon from "@/src/svg/TelephoneIcon";
-import MailIcon from "@/src/svg/MailIcon";
-import UserIcon from "@/src/svg/UserIcon";
-import UserPlusIcon from "@/src/svg/UserPlusIcon";
+import Container from "@components/ui/Container";
+import { useAuth } from "@features/auth/utils/useAuth";
+import TruckIcon from "@svg/TruckIcon";
+import GiftIcon from "@svg/GiftIcon";
+import TelephoneIcon from "@svg/TelephoneIcon";
+import MailIcon from "@svg/MailIcon";
+import UserIcon from "@svg/UserIcon";
+import UserPlusIcon from "@svg/UserPlusIcon";
+import LogoutIcon from "@svg/LogoutIcon";
 
 const Upper = () => {
+  const { isAuthenticated, logout } = useAuth();
+
   return (
     <div className="hidden lg:block text-sm border-b border-gray-100">
-      <div className="container mx-auto px-4">
+      <Container>
         <div className="flex justify-between items-center h-10">
           <div className="flex items-center gap-6 text-gray-500">
             <span className="flex items-center gap-2">
@@ -40,24 +47,46 @@ const Upper = () => {
             </div>
             <span className="w-px h-4 bg-gray-200" />
             <div className="flex items-center gap-4">
-              <Link
-                href="/signin"
-                className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 transition-colors"
-              >
-                <UserIcon className="size-3" />
-                <span>Sign In</span>
-              </Link>
-              <Link
-                href="/signup"
-                className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 transition-colors"
-              >
-                <UserPlusIcon className="size-3" />
-                <span>Sign Up</span>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    <LogoutIcon className="size-3" />
+                    <span>Logout</span>
+                  </button>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    <UserIcon className="size-3" />
+                    <span>Profile</span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    <UserIcon className="size-3" />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="flex items-center gap-1.5 text-gray-600 hover:text-primary-600 transition-colors"
+                  >
+                    <UserPlusIcon className="size-3" />
+                    <span>Sign Up</span>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 };
