@@ -139,7 +139,12 @@ const Lower = () => {
         <SearchBar onSubmit={handleSearch} autoFocus />
       </Modal>
 
-      <MobileDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <Suspense fallback={null}>
+  <MobileDrawer
+    isOpen={isMenuOpen}
+    onClose={() => setIsMenuOpen(false)}
+  />
+</Suspense>
     </>
   );
 };
